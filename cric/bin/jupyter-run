@@ -1,4 +1,4 @@
-#!/home/johan/Documents/cric/cric/bin/python
+#!/home/johan/Documents/is-duckworth-it/cric/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
