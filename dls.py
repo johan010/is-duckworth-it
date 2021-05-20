@@ -2,7 +2,7 @@ import pandas as pd
 from src.data.process_data import fetch_all_matches, load_dls
 from src.utils.utils import get_dl_par, dls_winner, handle_datestr
 from src.visualization.visuals import plot_dls, get_meta_info
-import string
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -16,27 +16,7 @@ def plot_male_odi_dls_acc():
     plot_dls(grouped_male, 'male_odi')
     get_meta_info(df_male)
 
-if __name__ == "__main__":
-    plot_male_odi_dls_acc()
-# new_df['wicket'].apply(get_wickets).apply(lambda x  : pd.Series({ k: v for k, v in x.items() }))
 
-def check_in_finished(inngs):
-    balls = (~inngs['extras_type'].isin(['wides', 'noballs'])).sum()
-    wickets = inngs['kind'].count()
-    if (balls == 300) or (wickets == 10):
-        return True
-    else:
-        return False
-    
-def filter_interrupted_matches(df):
-    df['bowl_again'] = df['extras_type'].isin(['wides', 'noballs'])
-    df = df[df['ins'] == '1st innings']
-    count = df.groupby(['match_id']).count()
-    summed = df.groupby(['match_id']).sum()
-    wickets = count['kind']
-    balls_bowled = count['bowl_again'] - summed['bowl_again']
-    wickets = wickets[(balls_bowled == 300) | (wickets == 10)]
-    return wickets.index
 
 df = fetch_all_matches()
 df = df[df['match_id'].isin(filter_interrupted_matches(df))]
