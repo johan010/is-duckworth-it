@@ -9,3 +9,4 @@ wget https://cricsheet.org/downloads/all.zip
 unzip all.zip
 ```
 
+Check the notebook on how the calculations were done.
