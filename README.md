@@ -8,5 +8,8 @@ cd all_matches
 wget https://cricsheet.org/downloads/all.zip
 unzip all.zip
 ```
-
-Check the notebook on how the calculations were done.
+Install the local libraries using:
+```
+pip install .
+```
+Check calculate_dls.ipynb on how the calculations were done.
