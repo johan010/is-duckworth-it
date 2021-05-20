@@ -24,7 +24,7 @@ def get_bat_first(rows):
 def process_match(match_id, diction):
     new_df = pd.DataFrame()
     for idx, ins in enumerate(['1st innings', '2nd innings']):
-        if (len(diction['innings'][0]) == 1) & (ins == '2nd innings'):
+        if (len(diction['innings']) == 1) & (ins == '2nd innings'):
             continue
         df = pd.DataFrame([x.values() for x in diction['innings'][idx][ins]['deliveries']])
         df['over'] = pd.DataFrame([x.keys() for x in diction['innings'][idx][ins]['deliveries']])
@@ -100,21 +100,51 @@ def recources_remaining_odi(balls_left, w_left, team_one_score,df_dls):
     """
     print("test")
 
+def over_to_balls(df_match, over):
+    over = 17.4
+    df_match['overs_pre'] = df_match['over'].apply(lambda x: int(str(x).split('.')[0]))
+    df_match['overs_balls'] = df_match['over'].apply(lambda x: int(str(x).split('.')[1]))
+    overs_at_start = int(str(over).split('.')[0])
+    over_start_balls = overs_at_start * 6
+    df_match.groupby(['overs_pre'].max)
+    in_over_balls = int(str(over).split('.')[1])
 
-df = pd.DataFrame()
-for yaml_files in tqdm(os.scandir('all_matches')):
-    if yaml_files.name.endswith('yaml'):
-        with open(yaml_files.path) as f:
-            try:
-               
-                my_dict = yaml.safe_load(f)
-                temp_df = process_match(yaml_files.name.split('.')[0], my_dict)
-            except Exception as e:
-                 print(yaml_files.name.split('.')[0])
-                 print(e)
-                 continue
-        df = pd.concat([df, temp_df])
 
+def fetch_all_matches():
+    df = pd.DataFrame()
+    for yaml_files in tqdm(os.scandir('all_matches')):
+        if yaml_files.name.endswith('yaml'):
+            with open(yaml_files.path) as f:
+                try:
+                    my_dict = yaml.safe_load(f)
+                    if my_dict['info']['match_type'] != 'ODI':
+                        continue
+                    temp_df = process_match(yaml_files.name.split('.')[0], my_dict)
+                except Exception as e:
+                    print(yaml_files.name.split('.')[0])
+                    print(e)
+                    continue
+            df = pd.concat([df, temp_df])
+    return df
+
+def get_current_runs(df_match):
+    for ins in ['1st innings', '2nd innings']:
+        temps = pd.DataFrame(
+            df_match[df_match['ins'] == ins]['total'].cumsum(),
+                     index=df_match.index
+                            )
+        temps.rename(columns= {'total': 'cur_total'}, inplace=True)
+        df_match = df_match.merge(temps, left_index=True, right_index=True)
+    df_match[['cur_total_x', 'cur_total_y']] = df_match[['cur_total_x',  'cur_total_y']].fillna(0)
+    return df_match['cur_total_x'] + df_match['cur_total_y']
+    
+for matches in df['match_id'].unique():
+    df_match = df[df['match_id'] == matches]
+    df_match = df_match.reset_index()
+    df_match['cur_total'] = get_current_runs(df_match)
+    in_1_total = df_match[df_match['ins'] == '1st innings']['cur_total'].max()
+    for balls in df_match[df_match['ins'] == '2nd innings'].columns:
+        print(balls)
 # test_file = '/home/johan/Documents/cric/all_matches/1158359.yaml'
 # with open(test_file) as f:
 #     my_dict = yaml.safe_load(f)
